@@ -1,0 +1,12 @@
+[logging]
+  level = "info"
+  outputPaths = ["stdout", "./logs/app.log"]
+  errorOutputPaths = ["stderr"]
+  encoding = "json"
+
+[lumberjack]
+  filename = "./logs/app.log"
+  maxsize = 10
+  maxbackups = 3
+  maxage = 28
+  compress = true
