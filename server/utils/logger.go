@@ -1,18 +1,22 @@
-// main.go
-
-package main
+// utils/logger.go
+package utils
 
 import (
-	"fmt"
 	"os"
-	"time"
+	"sync"
 
 	"github.com/BurntSushi/toml"
-	"github.com/Lazyn0tBug/beacon/server/utils"
-	"github.com/gin-gonic/gin"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 	lumberjack "gopkg.in/natefinch/lumberjack.v2"
+)
+
+var (
+	// 用来保证Logger的线程安全
+	once sync.Once
+	// 用来持有全局的Logger实例
+	globalLogger      *zap.Logger
+	loggerInitialized = false
 )
 
 // LoggingConfig represents the logging configuration.
@@ -32,6 +36,38 @@ type LumberjackConfig struct {
 	Compress   bool   `toml:"compress"`
 }
 
+// InitializeLogger 初始化全局的Logger实例
+func InitializeLogger() {
+	once.Do(func() {
+		config_file, err := getLoggingConfigFile()
+		if err != nil {
+			config_file = "logging.toml"
+		}
+		// Load the TOML configuration file
+		loggingConfig, lumberjackConfig, err := LoadConfigFromTOML(config_file)
+		if err != nil {
+			panic(err)
+		}
+
+		// Create the logger based on the configuration
+		logger, err := newLoggerFromConfig(loggingConfig, lumberjackConfig)
+		if err != nil {
+			panic(err)
+		}
+
+		loggerInitialized = true
+		globalLogger = logger
+	})
+}
+
+// GetLogger 返回全局的Logger实例，该实例是线程安全的。
+func GetLogger() *zap.Logger {
+	if !loggerInitialized {
+		InitializeLogger()
+	}
+	return globalLogger
+}
+
 // LoadConfigFromTOML loads the logging configuration from a TOML file.
 func LoadConfigFromTOML(filename string) (*LoggingConfig, *LumberjackConfig, error) {
 	var config struct {
@@ -48,16 +84,7 @@ func LoadConfigFromTOML(filename string) (*LoggingConfig, *LumberjackConfig, err
 }
 
 // newLoggerFromConfig creates a new zap logger based on the provided configuration.
-func newLoggerFromConfig(lumberjackConfig *LumberjackConfig) (*zap.Logger, error) {
-	// Load the TOML configuration file
-	var loggingConfig *LoggingConfig
-	var err Error
-
-	loggingConfig, lumberjackConfig, err := LoadConfigFromTOML("logging.toml")
-	if err != nil {
-		panic(err)
-	}
-
+func newLoggerFromConfig(loggingConfig *LoggingConfig, lumberjackConfig *LumberjackConfig) (*zap.Logger, error) {
 	// Parse the level
 	atomicLevel := zap.NewAtomicLevelAt(zap.InfoLevel)
 	err := atomicLevel.UnmarshalText([]byte(loggingConfig.Level))
@@ -95,6 +122,7 @@ func newLoggerFromConfig(lumberjackConfig *LumberjackConfig) (*zap.Logger, error
 		if err != nil {
 			return nil, err
 		}
+		defer file.Close()
 		syncers = append(syncers, zapcore.AddSync(file))
 	}
 	syncers = append(syncers, lumberJackSyncer)
@@ -108,26 +136,5 @@ func newLoggerFromConfig(lumberjackConfig *LumberjackConfig) (*zap.Logger, error
 
 	// Create the logger
 	logger := zap.New(core, zap.AddCaller(), zap.AddStacktrace(zapcore.ErrorLevel))
-	utils.InitializeLogger(logger)
 	return logger, nil
-}
-
-func main() {
-	// Create the logger based on the configuration
-	logger, err := newLoggerFromConfig(lumberjackConfig)
-	if err != nil {
-		panic(err)
-	}
-	defer logger.Sync() // flushes buffer, if any
-
-	r := gin.Default()
-
-	// Now you can use the logger
-	logger.Info("This is an info message")
-	logger.Error("This is an error message")
-
-	for i := 0; i < 12; i++ {
-		go logger.Info(fmt.Sprintf("test log: %d", i))
-	}
-	time.Sleep(time.Second * 3)
 }

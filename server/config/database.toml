@@ -1,0 +1,32 @@
+# database.toml
+[default]
+dialect = "postgres"
+database = "myloginapp"
+username = "root"
+password = "password"
+host = "127.0.0.1"
+port = 5432
+
+[development]
+dialect = "postgres"
+database = "myloginapp_dev"
+username = "root"
+password = "password"
+host = "127.0.0.1"
+port = 5432
+
+[test]
+dialect = "postgres"
+database = "myloginapp_test"
+username = "root"
+password = "password"
+host = "127.0.0.1"
+port = 5432
+
+[production]
+dialect = "postgres"
+database = "myloginapp_prod"
+username = "root"
+password = "password"
+host = "127.0.0.1"
+port = 5432
