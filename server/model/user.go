@@ -8,7 +8,7 @@ import (
 	"gorm.io/gorm"
 )
 
-type Users struct {
+type User struct {
 	GBN_MODEL
 	// global.GVA_MODEL
 	Username string `json:"userName" gorm:"comment:用户登录名"`             // 用户登录名
@@ -27,16 +27,19 @@ type Users struct {
 	IsActive int    `json:"enable" gorm:"default:1;comment:用户是否被冻结 1正常 0冻结"` //用户是否被冻结 1正常 2冻结
 }
 
-func (Users) TableName() string {
-	return "Users"
+func (User) TableName() string {
+	return "User"
 }
 
-func (u *Users) BeforeCreate(tx *gorm.DB) (err error) {
-	return u.HashPassword()
+func (u *User) BeforeCreate(tx *gorm.DB) (err error) {
+	if err := u.HashPassword(); err != nil {
+		return err
+	}
+	return nil
 }
 
 // HashPassword hashes the password using bcrypt.
-func (u *Users) HashPassword() error {
+func (u *User) HashPassword() error {
 	passwordHash, err := utils.BcryptHash(string(u.Password))
 	if err != nil {
 		return err
@@ -46,12 +49,12 @@ func (u *Users) HashPassword() error {
 }
 
 // CheckPassword checks if the provided password matches the stored password.
-func (u *Users) CheckPassword(password string) bool {
+func (u *User) CheckPassword(password string) bool {
 	return utils.BcryptCheck(u.Password, password)
 }
 
 // SetActive sets the user as active.
-func (u *Users) SetActive() {
+func (u *User) SetActive() {
 	u.IsActive = 1
 	u.UpdatedAt = time.Now()
 }

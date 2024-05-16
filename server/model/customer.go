@@ -1,7 +1,6 @@
 package model
 
-
-type Customers struct {
+type Customer struct {
 	GBN_MODEL
 	Name    string `json:"name"`
 	Email   string `json:"email"`
@@ -9,6 +8,6 @@ type Customers struct {
 	Address string `json:"address"`
 }
 
-func (Customers) TableName() string {
-	return "Customers"
+func (Customer) TableName() string {
+	return "Customer"
 }
