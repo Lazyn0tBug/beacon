@@ -3,7 +3,7 @@ package controller
 import (
 	"net/http"
 
-	"github.com/Laizyn0tBug/beacon/server/service"
+	"github.com/Lazyn0tBug/beacon/server/service"
 	"github.com/gin-gonic/gin"
 )
 
