@@ -1,8 +1,10 @@
 // models/perrmissions.go
 package model
 
+import "github.com/Lazyn0tBug/beacon/server/global"
+
 type Permission struct {
-	GBN_MODEL
+	global.GBN_MODEL
 	// global.GVA_MODEL
 	PermissionName string `gorm:"comment:权限名"` // 用户登录名
 }

@@ -4,17 +4,18 @@ package model
 import (
 	"time"
 
+	"github.com/Lazyn0tBug/beacon/server/global"
 	"github.com/Lazyn0tBug/beacon/server/utils"
 	"gorm.io/gorm"
 )
 
 type User struct {
-	GBN_MODEL
+	global.GBN_MODEL
 	// global.GVA_MODEL
 	Username string `json:"userName" gorm:"comment:用户登录名"`             // 用户登录名
 	Password string `json:"-"  gorm:"comment:用户登录密码"`                  // 用户登录密码
 	NickName string `json:"nickName" gorm:"default:系统用户;comment:用户昵称"` // 用户昵称
-	RoleId   uint   `gorm:"comment:角色ID"`
+	RoleID   uint   `gorm:"comment:角色ID"`
 	// SideMode    string         `json:"sideMode" gorm:"default:dark;comment:用户侧边主题"`                                          // 用户侧边主题
 	// HeaderImg   string         `json:"headerImg" gorm:"default:https://qmplusimg.henrongyi.top/gva_header.jpg;comment:用户头像"` // 用户头像
 	// BaseColor   string         `json:"baseColor" gorm:"default:#fff;comment:基础颜色"`                                           // 基础颜色
@@ -31,30 +32,30 @@ func (User) TableName() string {
 	return "User"
 }
 
-func (u *User) BeforeCreate(tx *gorm.DB) (err error) {
-	if err := u.HashPassword(); err != nil {
+func (user *User) BeforeCreate(tx *gorm.DB) (err error) {
+	if err := user.HashPassword(); err != nil {
 		return err
 	}
 	return nil
 }
 
 // HashPassword hashes the password using bcrypt.
-func (u *User) HashPassword() error {
-	passwordHash, err := utils.BcryptHash(string(u.Password))
+func (user *User) HashPassword() error {
+	passwordHash, err := utils.BcryptHash(string(user.Password))
 	if err != nil {
 		return err
 	}
-	u.Password = string(passwordHash)
+	user.Password = string(passwordHash)
 	return nil
 }
 
 // CheckPassword checks if the provided password matches the stored password.
-func (u *User) CheckPassword(password string) bool {
-	return utils.BcryptCheck(u.Password, password)
+func (user *User) CheckPassword(password string) bool {
+	return utils.BcryptCheck(user.Password, password)
 }
 
 // SetActive sets the user as active.
-func (u *User) SetActive() {
-	u.IsActive = 1
-	u.UpdatedAt = time.Now()
+func (user *User) SetActive() {
+	user.IsActive = 1
+	user.UpdatedAt = time.Now()
 }

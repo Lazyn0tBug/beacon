@@ -1,8 +1,10 @@
 // models/case.go
 package model
 
+import "github.com/Lazyn0tBug/beacon/server/global"
+
 type Case struct {
-	GBN_MODEL
+	global.GBN_MODEL
 	Title       string `json:"title"`
 	Description string `json:"description"`
 	Status      string `json:"status"`

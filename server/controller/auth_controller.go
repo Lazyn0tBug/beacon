@@ -2,18 +2,19 @@ package controller
 
 import (
 	"net/http"
+	"time"
 
 	"github.com/Lazyn0tBug/beacon/server/service"
 	"github.com/gin-gonic/gin"
+	"github.com/golang-jwt/jwt"
 )
 
 type AuthController struct {
-	userService service.UserService
+	userService *service.UserService
 }
 
-type RegisterRequest struct {
-	Username string `json:"username" binding:"required"`
-	Password string `json:"password" binding:"required"`
+func NewAuthController(userService *service.UserService) *AuthController {
+	return &AuthController{userService}
 }
 
 type LoginRequest struct {
@@ -25,17 +26,38 @@ type LoginResponse struct {
 	Token string `json:"token"`
 }
 
-func (uc *UserController) Login(c *gin.Context) {
-	var req LoginRequest
-	if err := c.ShouldBindJSON(&req); err != nil {
+func (authController *AuthController) Login(c *gin.Context) {
+	var loginRequest struct {
+		Username string `json:"username"`
+		Password string `json:"password"`
+	}
+	if err := c.ShouldBindJSON(&loginRequest); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
-	user, token, err := uc.userService.Login(req.Username, req.Password)
+	user, err := authController.userService.Login(loginRequest.Username, loginRequest.Password)
 	if err != nil {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "invalid username or password"})
+		c.JSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
 		return
 	}
 
-	c.JSON(http.StatusOK, LoginResponse{Token: token})
+	// Create JWT token
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
+		"username": user.Username,
+		"exp":      time.Now().Add(time.Hour * 24).Unix(), // Token expires in 24 hours
+	})
+	tokenString, err := token.SignedString([]byte("secret")) // You should use a more secure secret in production
+
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to generate token"})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"token": tokenString})
+}
+
+func (authController *AuthController) Logout(c *gin.Context) {
+	// Nothing to do here as JWT tokens are stateless
+	c.JSON(http.StatusOK, gin.H{"message": "Logged out successfully"})
 }

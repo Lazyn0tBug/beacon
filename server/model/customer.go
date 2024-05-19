@@ -1,7 +1,9 @@
 package model
 
+import "github.com/Lazyn0tBug/beacon/server/global"
+
 type Customer struct {
-	GBN_MODEL
+	global.GBN_MODEL
 	Name    string `json:"name"`
 	Email   string `json:"email"`
 	Phone   string `json:"phone"`
