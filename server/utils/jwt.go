@@ -7,6 +7,7 @@ import (
 	"github.com/Lazyn0tBug/beacon/server/global"
 	"github.com/Lazyn0tBug/beacon/server/model/system/request"
 	"github.com/golang-jwt/jwt/v5"
+	"go.uber.org/zap"
 )
 
 const (
@@ -22,6 +23,7 @@ var (
 	TokenNotValidYet = errors.New("Token not active yet")
 	TokenMalformed   = errors.New("That's not even a token")
 	TokenInvalid     = errors.New("Couldn't handle this token:")
+	Logger           = GetLogger()
 )
 
 func NewJWT() *JWT {
@@ -30,7 +32,7 @@ func NewJWT() *JWT {
 	}
 }
 
-func (j *JWT) CreateClaims(baseClaims request.BaseClaims) request.CustomClaims {
+func (jwtUtility *JWT) CreateClaims(baseClaims request.BaseClaims) request.CustomClaims {
 	bf, _ := ParseDuration(global.GVA_CONFIG.JWT.BufferTime)
 	ep, _ := ParseDuration(global.GVA_CONFIG.JWT.ExpiresTime)
 	claims := request.CustomClaims{
@@ -47,64 +49,50 @@ func (j *JWT) CreateClaims(baseClaims request.BaseClaims) request.CustomClaims {
 }
 
 // 创建一个token
-func (j *JWT) CreateToken(claims request.CustomClaims) (string, error) {
+func (jwtUtility *JWT) CreateToken(claims request.CustomClaims) (string, error) {
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
-	return token.SignedString(j.SigningKey)
+	return token.SignedString(jwtUtility.SigningKey)
 }
 
 // CreateTokenByOldToken 旧token 换新token 使用归并回源避免并发问题
-func (j *JWT) CreateTokenByOldToken(oldToken string, claims request.CustomClaims) (string, error) {
+func (jwtUtility *JWT) CreateTokenByOldToken(oldToken string, claims request.CustomClaims) (string, error) {
 	v, err, _ := global.GVA_Concurrency_Control.Do("JWT:"+oldToken, func() (interface{}, error) {
-		return j.CreateToken(claims)
+		return jwtUtility.CreateToken(claims)
 	})
 	return v.(string), err
 }
 
 // 解析 token
-func (j *JWT) ParseToken(tokenString string) (*request.CustomClaims, error) {
+func (jwtUtility *JWT) ParseToken(tokenString string) (*request.CustomClaims, error) {
 	token, err := jwt.ParseWithClaims(tokenString, &request.CustomClaims{}, func(token *jwt.Token) (i interface{}, e error) {
-		return j.SigningKey, nil
+		return jwtUtility.SigningKey, nil
 	})
+
 	if err != nil {
-		if ve, ok := err.(*jwt.ValidationError); ok {
-			if ve.Errors&jwt.ValidationErrorMalformed != 0 {
-				return nil, TokenMalformed
-			} else if ve.Errors&jwt.ValidationErrorExpired != 0 {
-				// Token is expired
-				return nil, TokenExpired
-			} else if ve.Errors&jwt.ValidationErrorNotValidYet != 0 {
-				return nil, TokenNotValidYet
-			} else {
-				return nil, TokenInvalid
-			}
-		}
+		Logger.Fatal("请检查请求头是否存在x-token且claims是否为规定结构")
 	}
+
 	if token != nil {
 		if claims, ok := token.Claims.(*request.CustomClaims); ok && token.Valid {
+			issuer := zap.String("issuer", claims.RegisteredClaims.Issuer)
+			Logger.Info("来自 {} 的token验证成功", issuer)
 			return claims, nil
 		}
+		Logger.Error("未知的claim类型，token验证失败")
 		return nil, TokenInvalid
-
 	} else {
+		Logger.Error("token为空，验证失败")
 		return nil, TokenInvalid
 	}
 }
 
-func GenerateJWT(username string) (string, error) {
-	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
-		"username": username,
-		"exp":      time.Now().Add(TokenExpiryDuration).Unix(),
-	})
+func (jwtUtility *JWT) ValidateJWT(tokenString string) bool {
 
-	// 使用密钥签名token
-	// ...
-
-	return tokenString, nil
-}
-
-func ValidateJWT(tokenString string) (*jwt.Token, error) {
-	// 解析和验证token
-	// ...
-
-	return token, nil
+	result := true
+	if _, err := jwtUtility.ParseToken(tokenString); err != nil {
+		Logger.Error("token验证失败")
+		result = false
+	}
+	Logger.Error("token验证成功")
+	return result
 }
