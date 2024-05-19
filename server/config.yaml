@@ -2,10 +2,10 @@
 
 # jwt configuration
 jwt:
-  signing-key: qmPlus
+  signing-key: Lazyn0tBug
   expires-time: 7d
   buffer-time: 1d
-  issuer: qmPlus
+  issuer: Lazyn0tBug
 # zap logger configuration
 zap:
   level: info

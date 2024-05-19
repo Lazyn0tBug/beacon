@@ -4,16 +4,16 @@ package main
 
 import (
 	"fmt"
-	"os"
 	"time"
 
 	"github.com/Lazyn0tBug/beacon/server/utils"
 	"github.com/gin-gonic/gin"
+    // "github.com/lestrrat-go/jwx"
 )
 
 func main() {
 	// Create the logger based on the configuration
-	Logger=utils.GetLogger() 
+	Logger := utils.GetLogger()
 
 	r := gin.Default()
 

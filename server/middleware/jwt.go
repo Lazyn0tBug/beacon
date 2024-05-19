@@ -7,16 +7,15 @@ import (
 
 	"github.com/Lazyn0tBug/beacon/server/global"
 	"github.com/Lazyn0tBug/beacon/server/model/common/response"
-	"github.com/Lazyn0tBug/beacon/server/service"
+	"github.com/Lazyn0tBug/beacon/server/service/system"
 	"github.com/Lazyn0tBug/beacon/server/utils"
-	"github.com/Lazyn0tBug/beacon/server/model/system"
 	"github.com/golang-jwt/jwt/v5"
 	"go.uber.org/zap"
 
 	"github.com/gin-gonic/gin"
 )
 
-var jwtService = service.ServiceGroupApp.SystemServiceGroup.JwtService
+var jwtService = new(system.JwtService)
 
 func JWTAuth() gin.HandlerFunc {
 	return func(c *gin.Context) {
