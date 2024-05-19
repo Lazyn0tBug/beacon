@@ -9,7 +9,7 @@ import (
 	"github.com/Lazyn0tBug/beacon/server/model/common/response"
 	"github.com/Lazyn0tBug/beacon/server/service"
 	"github.com/Lazyn0tBug/beacon/server/utils"
-	"github.com/flipped-aurora/gin-vue-admin/server/model/system"
+	"github.com/Lazyn0tBug/beacon/server/model/system"
 	"github.com/golang-jwt/jwt/v5"
 	"go.uber.org/zap"
 

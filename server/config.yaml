@@ -207,7 +207,7 @@ tencent-cos:
   secret-id: your-secret-id
   secret-key: your-secret-key
   base-url: https://gin.vue.admin
-  path-prefix: github.com/flipped-aurora/gin-vue-admin/server
+  path-prefix: github.com/Lazyn0tBug/beacon/server
 
 # aws s3 configuration (minio compatible)
 aws-s3:
@@ -219,7 +219,7 @@ aws-s3:
   secret-id: your-secret-id
   secret-key: your-secret-key
   base-url: https://gin.vue.admin
-  path-prefix: github.com/flipped-aurora/gin-vue-admin/server
+  path-prefix: github.com/Lazyn0tBug/beacon/server
 
 # huawei obs configuration
 hua-wei-obs:

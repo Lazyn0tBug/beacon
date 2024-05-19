@@ -5,7 +5,7 @@ import (
 	"time"
 
 	"github.com/Lazyn0tBug/beacon/server/global"
-	"github.com/flipped-aurora/gin-vue-admin/server/model/system/request"
+	"github.com/Lazyn0tBug/beacon/server/model/system/request"
 	"github.com/golang-jwt/jwt/v5"
 )
 

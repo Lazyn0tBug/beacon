@@ -1,7 +1,7 @@
 package utils
 
 import (
-	"github.com/flipped-aurora/gin-vue-admin/server/model/common/request"
+	"github.com/Lazyn0tBug/beacon/server/model/common/request"
 	"testing"
 )
 
