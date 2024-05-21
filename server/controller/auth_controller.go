@@ -4,9 +4,14 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/Lazyn0tBug/beacon/server/global"
 	"github.com/Lazyn0tBug/beacon/server/service"
+	system_service "github.com/Lazyn0tBug/beacon/server/service/system"
+	"github.com/Lazyn0tBug/beacon/server/utils"
+	"github.com/flipped-aurora/gin-vue-admin/server/model/common/response"
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt"
+	"go.uber.org/zap"
 )
 
 type AuthController struct {
@@ -59,5 +64,15 @@ func (authController *AuthController) Login(c *gin.Context) {
 
 func (authController *AuthController) Logout(c *gin.Context) {
 	// Nothing to do here as JWT tokens are stateless
+	token := utils.GetToken(c)
+	jwt := system_service.JwtBlacklist{Jwt: token}
+	error := jwtService.JsonInBlacklist(jwt)
 	c.JSON(http.StatusOK, gin.H{"message": "Logged out successfully"})
+	if err != nil {
+		global.GVA_LOG.Error("jwt作废失败!", zap.Error(err))
+		response.FailWithMessage("jwt作废失败", c)
+		return
+	}
+	utils.ClearToken(c)
+	response.OkWithMessage("jwt作废成功", c)
 }

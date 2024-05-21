@@ -2,6 +2,7 @@ package controller
 
 import (
 	"net/http"
+	"strconv"
 
 	"github.com/Lazyn0tBug/beacon/server/model"
 	"github.com/Lazyn0tBug/beacon/server/service"
@@ -22,6 +23,115 @@ type RegisterRequest struct {
 	Password string `json:"password" binding:"required"`
 	NickName string `json:"nickname" binding:"required"`
 	Email    string `json:"email" binding:"email"`
+}
+
+// GetUserByusername 根据用户名获取用户信息
+func (userController *UserController) GetUserByName(c *gin.Context) {
+	username := c.Param("username")
+	user, err := userController.userService.GetUserByName(username)
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "User not found"})
+		return
+	}
+	c.JSON(http.StatusOK, user)
+}
+
+// GetUserByID 根据用户ID获取用户信息
+func (userController *UserController) GetUserByID(c *gin.Context) {
+	userIDStr := c.Param("id")
+	userID, err := strconv.ParseUint(userIDStr, 10, 64)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid user ID"})
+		return
+	}
+	user, err := userController.userService.GetUserByID(userID)
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "User not found"})
+		return
+	}
+	c.JSON(http.StatusOK, user)
+}
+
+// UpdateUser 更新用户信息
+func (userController *UserController) UpdateUser(c *gin.Context) {
+	userIDStr := c.Param("id")
+	var user model.User
+	if err := c.ShouldBindJSON(&user); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	userID, err := strconv.ParseUint(userIDStr, 10, 64)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid user ID"})
+		return
+	}
+
+	user.ID = userID
+	if err := userController.userService.UpdateUser(&user); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update user"})
+		return
+	}
+	c.JSON(http.StatusOK, user)
+}
+
+// DeleteUser 删除用户
+func (userController *UserController) DeleteUser(c *gin.Context) {
+	userIDStr := c.Param("id")
+	userID, err := strconv.ParseUint(userIDStr, 10, 64)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid user ID"})
+		return
+	}
+	if err := userController.userService.DeleteUser(userID); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to delete user"})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"message": "User deleted"})
+}
+
+func (userController *UserController) ActivateUser(c *gin.Context) {
+	userIDStr := c.Param("id")
+	userID, err := strconv.ParseUint(userIDStr, 10, 64)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid user ID"})
+		return
+	}
+
+	if err := userController.userService.ActivateUser(userID); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to Activate user"})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"message": "User Activated"})
+}
+
+func (userController *UserController) SuspendUser(c *gin.Context) {
+	userIDStr := c.Param("id")
+	userID, err := strconv.ParseUint(userIDStr, 10, 64)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid user ID"})
+		return
+	}
+
+	if err := userController.userService.SuspendUser(userID); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to Suspend user"})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"message": "User Suspended"})
+}
+
+func (userController *UserController) GetUsersWithPagination(c *gin.Context) {
+	pageNumber, _ := strconv.Atoi(c.DefaultQuery("page", "1"))
+	pageSize, _ := strconv.Atoi(c.DefaultQuery("pagesize", "10"))
+	if pageSize <= 0 {
+		pageSize = 10
+	}
+
+	users, err := userController.userService.GetUsersWithPagination(pageNumber, pageSize)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"users": users})
 }
 
 func (userController *UserController) Register(c *gin.Context) {
@@ -49,29 +159,7 @@ func (userController *UserController) Register(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"message": "User registered successfully"})
 }
 
-// func (uc *UserController) GetUser(id uint) (*model.User, error) {
-// 	var user model.User
-// 	err := uc.DB.First(&user, id).Error
-// 	if err != nil {
-// 		return nil, err
-// 	}
-// 	return &user, nil
-// }
-
-// func (uc *UserController) UpdateUser(user *model.User) error {
-// 	err := uc.DB.Save(user).Error
-// 	return err
-// }
-
-// func (uc *UserController) DeleteUser(id uint) error {
-// 	user := model.User{}
-// 	err := uc.DB.Delete(&user, id).Error
-// 	return err
-// }
-
-// user_controller.go
-
-func (ctrl *UserController) ChangePassword(c *gin.Context) {
+func (userController *UserController) ChangePassword(c *gin.Context) {
 	session := sessions.Default(c)
 	user, exists := session.Get("user").(*model.User)
 	if !exists {
@@ -88,7 +176,7 @@ func (ctrl *UserController) ChangePassword(c *gin.Context) {
 		return
 	}
 
-	if err := ctrl.userService.ChangePassword(user, changePasswordRequest.OldPassword, changePasswordRequest.NewPassword); err != nil {
+	if err := userController.userService.ChangePassword(user, changePasswordRequest.OldPassword, changePasswordRequest.NewPassword); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}

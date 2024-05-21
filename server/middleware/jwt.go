@@ -7,6 +7,7 @@ import (
 
 	"github.com/Lazyn0tBug/beacon/server/global"
 	"github.com/Lazyn0tBug/beacon/server/model/common/response"
+	"github.com/Lazyn0tBug/beacon/server/model"
 	"github.com/Lazyn0tBug/beacon/server/service/system"
 	"github.com/Lazyn0tBug/beacon/server/utils"
 	"github.com/golang-jwt/jwt/v5"
@@ -16,6 +17,7 @@ import (
 )
 
 var jwtService = new(system.JwtService)
+type JwtBlacklist = model.system.JwtBlacklist
 
 func JWTAuth() gin.HandlerFunc {
 	return func(c *gin.Context) {
@@ -70,7 +72,7 @@ func JWTAuth() gin.HandlerFunc {
 				if err != nil {
 					global.GVA_LOG.Error("get redis jwt failed", zap.Error(err))
 				} else { // 当之前的取成功时才进行拉黑操作
-					_ = jwtService.JsonInBlacklist(system.JwtBlacklist{Jwt: RedisJwtToken})
+					_ = jwtService.JsonInBlacklist(JwtBlacklist{Jwt: RedisJwtToken})
 				}
 				// 无论如何都要记录当前的活跃状态
 				_ = jwtService.SetRedisJWT(newToken, newClaims.Username)

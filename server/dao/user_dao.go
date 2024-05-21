@@ -11,14 +11,14 @@ import (
 
 // Updated UserDAOInterface with new methods
 type UserDAOInterface interface {
-	GetByUsername(username string) (*model.User, error)
-	GetUserByUserID(userID uint64) (*model.User, error) // 获取指定ID的用户
+	GetUserByName(username string) (*model.User, error)
+	GetUserByID(userID uint64) (*model.User, error) // 获取指定ID的用户
 	Create(user *model.User) error
 	UpdatePassword(user *model.User, oldPassword string, newPassword string) error
 	Update(user *model.User) error                                         // 更新用户信息
-	Delete(userID uint) error                                              // 删除用户
-	Activate(userID uint) error                                            // 激活用户
-	Suspend(userID uint) error                                             // 冻结用户
+	Delete(userID uint64) error                                            // 删除用户
+	Activate(userID uint64) error                                          // 激活用户
+	Suspend(userID uint64) error                                           // 冻结用户
 	GetUsersWithPagination(pageNumber, pageSize int) ([]model.User, error) // 分页读取用户列表
 	VerifyUser(username, password string) (*model.User, error)             // 验证用户
 }
@@ -38,7 +38,7 @@ func NewUserDao(dbInterface database.DBInterface) *UserDAO {
 	return &UserDAO{dbInterface}
 }
 
-func (userDao *UserDAO) GetUserByUsername(username string) (*model.User, error) {
+func (userDao *UserDAO) GetUserByName(username string) (*model.User, error) {
 	var user model.User
 	result := userDao.dbInterface.GetDB().First(&user, "username = ?", username)
 	if result.Error != nil {
@@ -50,20 +50,23 @@ func (userDao *UserDAO) GetUserByUsername(username string) (*model.User, error) 
 	return &user, nil
 }
 
+func (userDAO *UserDAO) GetUserByID(userID uint64) (*model.User, error) {
+	user := &model.User{}
+	result := userDAO.dbInterface.GetDB().First(user, userID)
+	if result.Error != nil {
+		if errors.Is(result.Error, gorm.ErrRecordNotFound) {
+			return nil, nil // Return nil, nil if the user is not found
+		}
+		return nil, result.Error
+	}
+	return user, nil
+}
+
 // Create creates a new user.
 func (userDAO *UserDAO) Create(user *model.User) error {
 	user.IsActive = 1 // Set the user as active after registration
 	result := userDAO.dbInterface.GetDB().Create(user)
 	return result.Error
-}
-
-// Update updates an existing user.
-func (userDAO *UserDAO) UpdatePassword2(userID int64, newPassword string) error {
-	result := userDAO.dbInterface.GetDB().Model(&model.User{}).Where("id = ?", userID).Update("password", newPassword)
-	if result.Error != nil {
-		return result.Error
-	}
-	return nil
 }
 
 // Update updates an existing user.
@@ -116,18 +119,6 @@ func (userDAO *UserDAO) Suspend(userID uint64) error {
 	return nil
 }
 
-func (userDAO *UserDAO) GetUserByUserID(userID uint) (*model.User, error) {
-	user := &model.User{}
-	result := userDAO.dbInterface.GetDB().First(user, userID)
-	if result.Error != nil {
-		if errors.Is(result.Error, gorm.ErrRecordNotFound) {
-			return nil, nil // Return nil, nil if the user is not found
-		}
-		return nil, result.Error
-	}
-	return user, nil
-}
-
 // GetUsersWithPagination retrieves a paginated list of users.
 func (userDAO *UserDAO) GetUsersWithPagination(pageNumber, pageSize int) ([]model.User, error) {
 	var users []model.User
@@ -142,17 +133,11 @@ func (userDAO *UserDAO) GetUsersWithPagination(pageNumber, pageSize int) ([]mode
 // ... (other methods and NewUserDao function omitted for brevity)
 
 // VerifyUser verifies the username and password, returning the matching user (if exists and the password is correct).
-func (userDAO *UserDAO) VerifyUser(username, password string) (*model.User, error) {
+func (userDAO *UserDAO) VerifyUser(username string, password string) (*model.User, error) {
 	// Query the database to find the user
-	var user model.User
-	result := userDAO.dbInterface.GetDB().Where("username = ?", username).First(&user)
-	if result.Error != nil {
-		if errors.Is(result.Error, gorm.ErrRecordNotFound) {
-			// User does not exist
-			return nil, errors.New("user not found")
-		}
-		// Other database errors
-		return nil, result.Error
+	user, err := userDAO.GetUserByName(username)
+	if err != nil {
+		return nil, err
 	}
 
 	// Verify if the password is correct
@@ -162,7 +147,7 @@ func (userDAO *UserDAO) VerifyUser(username, password string) (*model.User, erro
 	}
 
 	// User exists and password is correct, return the user pointer
-	return &user, nil
+	return user, nil
 }
 
 // hashPasswordBeforeSave 是在保存用户之前调用的钩子，用于哈希密码

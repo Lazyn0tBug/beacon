@@ -8,7 +8,7 @@ import (
 
 	"github.com/Lazyn0tBug/beacon/server/utils"
 	"github.com/gin-gonic/gin"
-    // "github.com/lestrrat-go/jwx"
+	// "github.com/lestrrat-go/jwx"
 )
 
 func main() {
@@ -25,4 +25,6 @@ func main() {
 		go Logger.Info(fmt.Sprintf("test log: %d", i))
 	}
 	time.Sleep(time.Second * 3)
+
+	r.Run(":8080")
 }

@@ -21,9 +21,53 @@ func NewUserService(userDAO dao.UserDAOInterface) *UserService {
 	}
 }
 
-func (s *UserService) Register(userData *model.User) error {
+// GetByUsername 通过用户名获取用户
+func (userService *UserService) GetUserByName(username string) (*model.User, error) {
+	return userService.userDAO.GetUserByName(username)
+}
+
+// GetUserByUserID 通过用户ID获取用户
+func (userService *UserService) GetUserByID(userID uint64) (*model.User, error) {
+	return userService.userDAO.GetUserByID(userID)
+}
+
+// UpdateUser 更新用户信息
+func (userService *UserService) UpdateUser(user *model.User) error {
+	return userService.userDAO.Update(user)
+}
+
+// DeleteUser 删除用户
+func (userService *UserService) DeleteUser(userID uint64) error {
+	return userService.userDAO.Delete(userID)
+}
+
+// ActivateUser 激活用户
+func (userService *UserService) ActivateUser(userID uint64) error {
+	return userService.userDAO.Activate(userID)
+}
+
+// SuspendUser 冻结用户
+func (userService *UserService) SuspendUser(userID uint64) error {
+	return userService.userDAO.Suspend(userID)
+}
+
+// GetUsersWithPagination 分页读取用户列表
+func (userService *UserService) GetUsersWithPagination(pageNumber, pageSize int) ([]model.User, error) {
+	return userService.userDAO.GetUsersWithPagination(pageNumber, pageSize)
+}
+
+// VerifyUser 验证用户
+func (userService *UserService) VerifyUser(username, password string) (*model.User, error) {
+	user, err := userService.userDAO.VerifyUser(username, password)
+	if err != nil {
+		return nil, fmt.Errorf("user verification failed: %w", err)
+	}
+	return user, nil
+}
+
+func (userService *UserService) Register(userData *model.User) error {
 	// 检查用户名是否存在
-	_, err := s.userDAO.GetByUsername(userData.Username)
+	_, err := userService.userDAO.GetUserByName(userData.Username)
 	if err == nil {
 		return ErrUserAlreadyExists
 	}
@@ -32,44 +76,24 @@ func (s *UserService) Register(userData *model.User) error {
 	}
 
 	// 调用DAO层创建用户
-	if err := s.userDAO.Create(userData); err != nil {
+	if err := userService.userDAO.Create(userData); err != nil {
 		return fmt.Errorf("failed to create user: %w", err)
 	}
 
 	return nil
 }
 
-// Login 用户登录
-// func (userService *UserService) Login(username, password string) (string, error) {
-// 	user, err := s.userDAO.VerifyUser(username, password)
-// 	if err != nil {
-// 		return "", err
-// 	}
-// 	token, err := utils.GenerateJWT(user.ID)
-// 	if err != nil {
-// 		return "", err
-// 	}
-// 	return token, nil
-// }
-
 func (userService *UserService) Login(username, password string) (*model.User, error) {
-	user, err := userService.userDAO.VerifyUser(username, password)
+	user, err := userService.VerifyUser(username, password)
 	if err != nil {
 		return nil, err
 	}
-	if !user.CheckPassword(password) {
-		return nil, errors.New("invalid username or password")
-	}
+
 	return user, nil
 }
 
 func (userService *UserService) Logout(session sessions.Session) error {
 	// 清除用户会话信息
-	session.Clear()
-	err := session.Save(r.Context())
-	if err != nil {
-		return err
-	}
 	return nil
 }
 

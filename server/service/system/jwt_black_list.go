@@ -2,12 +2,15 @@ package system
 
 import (
 	"context"
+	"errors"
+	"time"
 
 	"go.uber.org/zap"
 
 	"github.com/Lazyn0tBug/beacon/server/global"
-	"github.com/Lazyn0tBug/beacon/server/utils"
 	"github.com/Lazyn0tBug/beacon/server/model/system"
+	"github.com/Lazyn0tBug/beacon/server/utils"
+	jwt "github.com/lestrrat-go/jwx"
 )
 
 type JwtService struct{}
@@ -52,6 +55,42 @@ func (jwtService *JwtService) GetRedisJWT(userName string) (redisJWT string, err
 	return redisJWT, err
 }
 
+// GetRedisJWT retrieves the JWT ID associated with the username from Redis
+func (js *JwtService) GetRedisJWT(username string, tokenString string) (string, error) {
+	// Parse the JWT token to extract the JWT ID
+	token, err := jwt.ParseString(tokenString)
+	if err != nil {
+		return "", err
+	}
+
+	// Get the JWT ID from the token
+	jwtID, ok := token.Get(jwt.JWTPresentersKey)
+	if !ok {
+		return "", errors.New("JWT ID not found in token")
+	}
+
+	// Convert jwtID to string
+	jwtIDStr, ok := jwtID.(string)
+	if !ok {
+		return "", errors.New("JWT ID is not a string")
+	}
+
+	// Define the key for the Redis set
+	key := "jwt_blacklist:" + username
+
+	// Check if the JWT ID exists in the Redis set
+	ctx := context.Background()
+	exists, err := global.GVA_REDIS.SIsMember(ctx, key, jwtIDStr).Result()
+	if err != nil {
+		return "", err
+	}
+	if !exists {
+		return "", errors.New("JWT ID not found for the user")
+	}
+
+	return jwtIDStr, nil
+}
+
 //@author: [piexlmax](https://github.com/piexlmax)
 //@function: SetRedisJWT
 //@description: jwt存入redis并设置过期时间
@@ -69,6 +108,51 @@ func (jwtService *JwtService) SetRedisJWT(jwt string, userName string) (err erro
 	return err
 }
 
+// SetRedisJWT sets the JWT associated with the username and JWT ID in Redis blacklist
+func (jwtService *JwtService) SetRedisJWT(tokenString string, userName string) error {
+	// Parse the JWT token to extract the JWT ID and expiration
+	token, err := jwt.ParseString(tokenString)
+	if err != nil {
+		return err
+	}
+
+	// Get the JWT ID from the token
+	jwtID, ok := token.Get(jwt.JWTPresentersKey)
+	if !ok {
+		return errors.New("JWT ID not found in token")
+	}
+
+	// Convert jwtID to string
+	jwtIDStr, ok := jwtID.(string)
+	if !ok {
+		return errors.New("JWT ID is not a string")
+	}
+
+	// Get the expiration time from the token
+	exp, ok := token.Get(jwt.ExpirationKey)
+	if !ok {
+		return errors.New("Expiration time not found in token")
+	}
+
+	// Convert exp to time.Time
+	expirationTime := time.Unix(int64(exp.(float64)), 0)
+
+	// Define the key for the Redis set
+	key := "jwt_blacklist:" + userName
+
+	// Set the JWT ID in the Redis set
+	ctx := context.Background()
+	err = jwtService.redisClient.SAdd(ctx, key, jwtIDStr).Err()
+	if err != nil {
+		return err
+	}
+
+	// Set the expiration for the key
+	jwtService.redisClient.Expire(ctx, key, expirationTime.Sub(time.Now()))
+
+	return nil
+}
+
 func LoadAll() {
 	var data []string
 	err := global.GVA_DB.Model(&system.JwtBlacklist{}).Select("jwt").Find(&data).Error
@@ -80,4 +164,3 @@ func LoadAll() {
 		global.BlackCache.SetDefault(data[i], struct{}{})
 	} // jwt黑名单 加入 BlackCache 中
 }
-
