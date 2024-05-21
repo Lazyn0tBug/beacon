@@ -28,6 +28,26 @@ type User struct {
 	IsActive int    `json:"enable" gorm:"default:1;comment:用户是否被冻结 1正常 0冻结"` //用户是否被冻结 1正常 2冻结
 }
 
+func (user User) ToPublic() UserPublic {
+	return UserPublic{
+		UserID:   user.ID,
+		Username: user.Username,
+		NickName: user.NickName,
+		RoleID:   user.RoleID,
+		Email:    user.Email,
+		IsActive: user.IsActive,
+	}
+}
+
+type UserPublic struct {
+	UserID   uint64
+	Username string
+	NickName string
+	RoleID   uint
+	Email    string
+	IsActive int
+}
+
 func (User) TableName() string {
 	return "User"
 }

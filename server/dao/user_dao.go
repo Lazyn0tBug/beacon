@@ -15,12 +15,12 @@ type UserDAOInterface interface {
 	GetUserByID(userID uint64) (*model.User, error) // 获取指定ID的用户
 	Create(user *model.User) error
 	UpdatePassword(user *model.User, oldPassword string, newPassword string) error
-	Update(user *model.User) error                                         // 更新用户信息
-	Delete(userID uint64) error                                            // 删除用户
-	Activate(userID uint64) error                                          // 激活用户
-	Suspend(userID uint64) error                                           // 冻结用户
-	GetUsersWithPagination(pageNumber, pageSize int) ([]model.User, error) // 分页读取用户列表
-	VerifyUser(username, password string) (*model.User, error)             // 验证用户
+	Update(user *model.User) error                                               // 更新用户信息
+	Delete(userID uint64) error                                                  // 删除用户
+	Activate(userID uint64) error                                                // 激活用户
+	Suspend(userID uint64) error                                                 // 冻结用户
+	GetUsersWithPagination(pageNumber, pageSize int) ([]model.UserPublic, error) // 分页读取用户列表
+	VerifyUser(username, password string) (*model.User, error)                   // 验证用户
 }
 
 type UserDAO struct {
@@ -120,17 +120,20 @@ func (userDAO *UserDAO) Suspend(userID uint64) error {
 }
 
 // GetUsersWithPagination retrieves a paginated list of users.
-func (userDAO *UserDAO) GetUsersWithPagination(pageNumber, pageSize int) ([]model.User, error) {
+func (userDAO *UserDAO) GetUsersWithPagination(pageNumber, pageSize int) ([]model.UserPublic, error) {
 	var users []model.User
 	offset := (pageNumber - 1) * pageSize
 	result := userDAO.dbInterface.GetDB().Limit(pageSize).Offset(offset).Find(&users)
 	if result.Error != nil {
 		return nil, result.Error
 	}
-	return users, nil
-}
 
-// ... (other methods and NewUserDao function omitted for brevity)
+	var publicUsers []model.UserPublic
+	for _, user := range users {
+		publicUsers = append(publicUsers, user.ToPublic())
+	}
+	return publicUsers, nil
+}
 
 // VerifyUser verifies the username and password, returning the matching user (if exists and the password is correct).
 func (userDAO *UserDAO) VerifyUser(username string, password string) (*model.User, error) {

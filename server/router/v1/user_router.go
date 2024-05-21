@@ -13,7 +13,7 @@ func InitUserRouter(r *gin.Engine) {
 			userController.Register(ctx)
 		})
 		userRouter.GET("/user/list", func(ctx *gin.Context) {
-			userController.GetUsers(ctx)
+			userController.GetUsersWithPagination(ctx)
 		})
 		userRouter.GET("/user/:id", func(ctx *gin.Context) {
 			userController.GetUserByID(ctx)
