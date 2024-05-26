@@ -1,20 +1,16 @@
 package global
 
 import (
-	"github.com/qiniu/qmgo"
 	"sync"
 
-	"github.com/Lazyn0tBug/beacon/server/utils/timer"
-	"github.com/songzhibin97/gkit/cache/local_cache"
-
-	"golang.org/x/sync/singleflight"
-
-	"go.uber.org/zap"
-
 	"github.com/Lazyn0tBug/beacon/server/config"
-
+	"github.com/Lazyn0tBug/beacon/server/utils/timer"
+	"github.com/qiniu/qmgo"
 	"github.com/redis/go-redis/v9"
+	"github.com/songzhibin97/gkit/cache/local_cache"
 	"github.com/spf13/viper"
+	"go.uber.org/zap"
+	"golang.org/x/sync/singleflight"
 	"gorm.io/gorm"
 )
 
@@ -51,4 +47,3 @@ func MustGetGlobalDBByDBName(dbname string) *gorm.DB {
 	}
 	return db
 }
-

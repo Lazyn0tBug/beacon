@@ -40,7 +40,7 @@ func checkConfigDir() (string, error) {
 		return ".", err
 	}
 
-	config_dir := filepath.Join(root, "config")
+	config_dir := filepath.Join(root, ".")
 
 	if _, err := os.Stat(config_dir); os.IsNotExist(err) {
 		return "", err // 返回空字符串和创建目录时遇到的错误

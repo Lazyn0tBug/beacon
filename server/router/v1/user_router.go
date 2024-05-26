@@ -9,20 +9,10 @@ func InitUserRouter(r *gin.Engine) {
 	userRouter := r.Group("v1/user")
 	userController := controller.UserController{}
 	{
-		userRouter.POST("/register", func(ctx *gin.Context) {
-			userController.Register(ctx)
-		})
-		userRouter.GET("/user/list", func(ctx *gin.Context) {
-			userController.GetUsersWithPagination(ctx)
-		})
-		userRouter.GET("/user/:id", func(ctx *gin.Context) {
-			userController.GetUserByID(ctx)
-		})
-		userRouter.PUT("/user/:id", func(ctx *gin.Context) {
-			userController.UpdateUser(ctx)
-		})
-		userRouter.DELETE("/user/:id", func(ctx *gin.Context) {
-			userController.DeleteUser(ctx)
-		})
+		userRouter.GET("/register", userController.Register)
+		userRouter.GET("/list", userController.GetUsersWithPagination)
+		userRouter.GET("/:id", userController.GetUserByID)
+		userRouter.PUT("/:id", userController.UpdateUser)
+		userRouter.DELETE("/:id", userController.DeleteUser)
 	}
 }

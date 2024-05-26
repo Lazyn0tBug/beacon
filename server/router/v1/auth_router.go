@@ -9,11 +9,7 @@ func InitAuthRouter(r *gin.Engine) {
 	authRouter := r.Group("/v1/auth")
 	authController := controller.AuthController{}
 	{
-		authRouter.POST("/login", func(ctx *gin.Context) {
-			authController.Login(ctx)
-		})
-		authRouter.POST("/logout", func(ctx *gin.Context) {
-			authController.Logout(ctx)
-		})
+		authRouter.POST("/login", authController.Login)
+		authRouter.POST("/logout", authController.Logout)
 	}
 }

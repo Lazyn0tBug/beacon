@@ -5,7 +5,7 @@ import (
 	"strings"
 )
 
-func GetJSONKeys(jsonStr string) (keys []string, err error) {
+func GetJSONKeys2(jsonStr string) (keys []string, err error) {
 	// 使用json.Decoder，以便在解析过程中记录键的顺序
 	dec := json.NewDecoder(strings.NewReader(jsonStr))
 	t, err := dec.Token()
