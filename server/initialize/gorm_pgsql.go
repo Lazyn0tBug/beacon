@@ -1,50 +1,70 @@
 package initialize
 
 import (
+	"context"
 	"github.com/Lazyn0tBug/beacon/server/config"
 	"github.com/Lazyn0tBug/beacon/server/global"
 	"github.com/Lazyn0tBug/beacon/server/initialize/internal"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
+	"gorm.io/plugin/dbresolver"
+	"sync"
 )
+
+const PGSQLDSN = "host=localhost user=zombo password=token dbname=gorm port=5432 sslmode=disable TimeZone=Asia/Shanghai"
+
+var (
+	db   *gorm.DB
+	once sync.Once
+)
+
 
 // GormPgSql 初始化 Postgresql 数据库
 // Author [piexlmax](https://github.com/piexlmax)
 // Author [SliverHorn](https://github.com/SliverHorn)
 func GormPgSql() *gorm.DB {
-	p := global.GVA_CONFIG.Pgsql
-	if p.Dbname == "" {
-		return nil
-	}
-	pgsqlConfig := postgres.Config{
-		DSN:                  p.Dsn(), // DSN data source name
-		PreferSimpleProtocol: false,
-	}
-	if db, err := gorm.Open(postgres.New(pgsqlConfig), internal.Gorm.Config(p.Prefix, p.Singular)); err != nil {
-		return nil
-	} else {
-		sqlDB, _ := db.DB()
-		sqlDB.SetMaxIdleConns(p.MaxIdleConns)
-		sqlDB.SetMaxOpenConns(p.MaxOpenConns)
-		return db
-	}
+	return GormPgSqlByConfig(global.GVA_CONFIG.Pgsql)
 }
 
 // GormPgSqlByConfig 初始化 Postgresql 数据库 通过参数
 func GormPgSqlByConfig(p config.Pgsql) *gorm.DB {
-	if p.Dbname == "" {
-		return nil
+	once.Do(func(){
+		if p.Dbname == "" {
+			return nil
+		}
+		pgsqlConfig := postgres.Config{
+			DSN:                  p.Dsn(), // DSN data source name
+			PreferSimpleProtocol: false,
+		}
+		if db, err := gorm.Open(postgres.New(pgsqlConfig), internal.Gorm.Config(p.Prefix, p.Singular)); err != nil {
+			db = nil
+			return
+			// panic(err)
+		} else {
+			sqlDB, err := db.DB()
+			if err!=nil {
+				db = nil
+				return
+			}
+			sqlDB.SetMaxIdleConns(p.MaxIdleConns)
+			sqlDB.SetMaxOpenConns(p.MaxOpenConns)
+		}
 	}
-	pgsqlConfig := postgres.Config{
-		DSN:                  p.Dsn(), // DSN data source name
-		PreferSimpleProtocol: false,
-	}
-	if db, err := gorm.Open(postgres.New(pgsqlConfig), internal.Gorm.Config(p.Prefix, p.Singular)); err != nil {
-		panic(err)
-	} else {
-		sqlDB, _ := db.DB()
-		sqlDB.SetMaxIdleConns(p.MaxIdleConns)
-		sqlDB.SetMaxOpenConns(p.MaxOpenConns)
-		return db
-	}
+)
+return db
 }
+
+// WriteDB ...
+// func WriteDB(ctx context.Context) *gorm.DB {
+// 	return db.Clauses(dbresolver.Write).WithContext(ctx)
+// }
+
+// ReadDB ...
+// func ReadDB(ctx context.Context) *gorm.DB {
+// 	return db.Clauses(dbresolver.Read).WithContext(ctx)
+// }
+
+// DB Read write separation
+// func DB(ctx context.Context) *gorm.DB {
+// 	return db.WithContext(ctx)
+// }

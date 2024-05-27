@@ -6,7 +6,7 @@ import (
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
 
-	"github.com/Lazyn0tBug/lecture/model"
+	"github.com/Lazyn0tBug/beacon/server/model"
 	"gorm.io/gen"
 )
 
