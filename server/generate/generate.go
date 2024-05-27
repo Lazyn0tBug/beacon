@@ -1,23 +1,20 @@
 package main
 
 import (
-	"fmt"
-
-	"gorm.io/driver/sqlite"
-	"gorm.io/gorm"
-
+	"github.com/Lazyn0tBug/beacon/server/generate/method"
+	"github.com/Lazyn0tBug/beacon/server/initialize"
 	"github.com/Lazyn0tBug/beacon/server/model"
+	"github.com/Lazyn0tBug/beacon/server/utils"
+
 	"gorm.io/gen"
 )
 
 func main() {
-	db, err := gorm.Open(sqlite.Open("test.db"), &gorm.Config{})
-	if err != nil {
-		fmt.Println("failed to connect database")
-		panic("failed to connect database")
+	Logger := utils.GetLogger()
+	db := initialize.Gorm()
+	if db == nil {
+		Logger.Error("failed to connect database")
 	}
-	// db.WithContext(context.Background())
-	// db.AutoMigrate(model.User{})
 
 	g := gen.NewGenerator(gen.Config{
 		OutPath: "./query",
@@ -33,8 +30,7 @@ func main() {
 	// g.ApplyBasic(g.GenerateModelAs("user", "JustUser"))
 
 	// apply diy interfaces on structs or table models
-	g.ApplyInterface(func(model.Method) {}, model.User{}) // struct test will be ignored
-	g.ApplyInterface(func(model.UserMethod) {}, model.User{})
+	g.ApplyInterface(func(method.UserMethod) {}, model.User{}) // struct test will be ignored
 
 	// g.ApplyBasic(
 	// 	// Generate struct `User` based on table `users`
