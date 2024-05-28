@@ -20,7 +20,7 @@ import (
 	// "github.com/lestrrat-go/jwx"
 )
 
-func main2() {
+func main() {
 	// Create the logger based on the configuration
 	Logger := utils.GetLogger()
 

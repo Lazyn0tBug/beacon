@@ -6,7 +6,6 @@ import (
 
 	"github.com/Lazyn0tBug/beacon/server/global"
 	"github.com/Lazyn0tBug/beacon/server/model"
-	"github.com/Lazyn0tBug/beacon/server/model/"
 	"github.com/Lazyn0tBug/beacon/server/model/system"
 	"github.com/Lazyn0tBug/beacon/server/utils"
 	"go.uber.org/zap"

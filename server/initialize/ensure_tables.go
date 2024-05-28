@@ -3,7 +3,7 @@ package initialize
 import (
 	"context"
 	adapter "github.com/casbin/gorm-adapter/v3"
-	"github.com/Lazyn0tBug/beacon/server/model/example"
+	// "github.com/Lazyn0tBug/beacon/server/model/example"
 	sysModel "github.com/Lazyn0tBug/beacon/server/model/system"
 	"github.com/Lazyn0tBug/beacon/server/service/system"
 	"gorm.io/gorm"
@@ -35,29 +35,29 @@ func (e *ensureTables) MigrateTable(ctx context.Context) (context.Context, error
 		return ctx, system.ErrMissingDBContext
 	}
 	tables := []interface{}{
-		sysModel.SysApi{},
-		sysModel.SysUser{},
-		sysModel.SysBaseMenu{},
-		sysModel.SysAuthority{},
+		// sysModel.SysApi{},
+		// sysModel.SysUser{},
+		// sysModel.SysBaseMenu{},
+		// sysModel.SysAuthority{},
 		sysModel.JwtBlacklist{},
-		sysModel.SysDictionary{},
-		sysModel.SysAutoCodeHistory{},
-		sysModel.SysOperationRecord{},
-		sysModel.SysDictionaryDetail{},
-		sysModel.SysBaseMenuParameter{},
-		sysModel.SysBaseMenuBtn{},
-		sysModel.SysAuthorityBtn{},
-		sysModel.SysAutoCode{},
-		sysModel.SysExportTemplate{},
-		sysModel.Condition{},
-		sysModel.JoinTemplate{},
+		// sysModel.SysDictionary{},
+		// sysModel.SysAutoCodeHistory{},
+		// sysModel.SysOperationRecord{},
+		// sysModel.SysDictionaryDetail{},
+		// sysModel.SysBaseMenuParameter{},
+		// sysModel.SysBaseMenuBtn{},
+		// sysModel.SysAuthorityBtn{},
+		// sysModel.SysAutoCode{},
+		// sysModel.SysExportTemplate{},
+		// sysModel.Condition{},
+		// sysModel.JoinTemplate{},
 
 		adapter.CasbinRule{},
 
-		example.ExaFile{},
-		example.ExaCustomer{},
-		example.ExaFileChunk{},
-		example.ExaFileUploadAndDownload{},
+		// example.ExaFile{},
+		// example.ExaCustomer{},
+		// example.ExaFileChunk{},
+		// example.ExaFileUploadAndDownload{},
 	}
 	for _, t := range tables {
 		_ = db.AutoMigrate(&t)
@@ -73,29 +73,29 @@ func (e *ensureTables) TableCreated(ctx context.Context) bool {
 		return false
 	}
 	tables := []interface{}{
-		sysModel.SysApi{},
-		sysModel.SysUser{},
-		sysModel.SysBaseMenu{},
-		sysModel.SysAuthority{},
+		// sysModel.SysApi{},
+		// sysModel.SysUser{},
+		// sysModel.SysBaseMenu{},
+		// sysModel.SysAuthority{},
 		sysModel.JwtBlacklist{},
-		sysModel.SysDictionary{},
-		sysModel.SysAutoCodeHistory{},
-		sysModel.SysOperationRecord{},
-		sysModel.SysDictionaryDetail{},
-		sysModel.SysBaseMenuParameter{},
-		sysModel.SysBaseMenuBtn{},
-		sysModel.SysAuthorityBtn{},
-		sysModel.SysAutoCode{},
-		sysModel.SysExportTemplate{},
-		sysModel.Condition{},
-		sysModel.JoinTemplate{},
+		// sysModel.SysDictionary{},
+		// sysModel.SysAutoCodeHistory{},
+		// sysModel.SysOperationRecord{},
+		// sysModel.SysDictionaryDetail{},
+		// sysModel.SysBaseMenuParameter{},
+		// sysModel.SysBaseMenuBtn{},
+		// sysModel.SysAuthorityBtn{},
+		// sysModel.SysAutoCode{},
+		// sysModel.SysExportTemplate{},
+		// sysModel.Condition{},
+		// sysModel.JoinTemplate{},
 
 		adapter.CasbinRule{},
 
-		example.ExaFile{},
-		example.ExaCustomer{},
-		example.ExaFileChunk{},
-		example.ExaFileUploadAndDownload{},
+		// example.ExaFile{},
+		// example.ExaCustomer{},
+		// example.ExaFileChunk{},
+		// example.ExaFileUploadAndDownload{},
 	}
 	yes := true
 	for _, t := range tables {

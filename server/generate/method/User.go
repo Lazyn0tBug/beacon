@@ -15,11 +15,11 @@ type UserMethod interface {
 
 	// SetActive sets the user as active and updates the updated_at timestamp.
 	//
-	// UPDATE @@table SET is_active = 1, updated_at = now() WHERE id = @id
+	// UPDATE @@table SET is_active = 1 WHERE id = @id
 	SetActive(id uint) error
 
 	// SetActive sets the user as active and updates the updated_at timestamp.
 	//
-	// UPDATE @@table SET is_active = 0, updated_at = now() WHERE id = @id
+	// UPDATE @@table SET is_active = 0 WHERE id = @id
 	SetInActive(id uint) error
 }

@@ -1,8 +1,8 @@
 package initialize
 
 import (
-	_ "github.com/Lazyn0tBug/beacon/server/source/example"
-	_ "github.com/Lazyn0tBug/beacon/server/source/system"
+// _ "github.com/Lazyn0tBug/beacon/server/source/example"
+// _ "github.com/Lazyn0tBug/beacon/server/source/system"
 )
 
 func init() {

@@ -36,6 +36,8 @@ func (g *_gorm) Config(prefix string, singular bool) *gorm.Config {
 	})
 	var logMode DBBASE
 	switch global.GVA_CONFIG.System.DbType {
+	case "postgres":
+		logMode = &global.GVA_CONFIG.Pgsql
 	case "mysql":
 		logMode = &global.GVA_CONFIG.Mysql
 	case "pgsql":

@@ -5,10 +5,10 @@ import (
 	"time"
 
 	"github.com/Lazyn0tBug/beacon/server/global"
+	"github.com/Lazyn0tBug/beacon/server/model/common/response"
 	"github.com/Lazyn0tBug/beacon/server/service"
 	system_service "github.com/Lazyn0tBug/beacon/server/service/system"
 	"github.com/Lazyn0tBug/beacon/server/utils"
-	"github.com/flipped-aurora/gin-vue-admin/server/model/common/response"
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt"
 	"go.uber.org/zap"
