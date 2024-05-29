@@ -3,6 +3,7 @@ package utils
 
 import (
 	"os"
+	"path/filepath"
 	"sync"
 
 	"github.com/BurntSushi/toml"
@@ -118,11 +119,15 @@ func newLoggerFromConfig(loggingConfig *LoggingConfig, lumberjackConfig *Lumberj
 	// Prepare the syncers slice
 	var syncers []zapcore.WriteSyncer
 	for _, outputPath := range loggingConfig.OutputPaths {
+		if err := os.MkdirAll(filepath.Dir(outputPath), 0755); err != nil {
+			panic("failed to create log directory: " + err.Error())
+		}
+
 		file, err := os.OpenFile(outputPath, os.O_WRONLY|os.O_CREATE|os.O_APPEND, 0644)
 		if err != nil {
 			return nil, err
 		}
-		defer file.Close()
+		// defer file.Close()
 		syncers = append(syncers, zapcore.AddSync(file))
 	}
 	syncers = append(syncers, lumberJackSyncer)

@@ -7,12 +7,22 @@ import (
 	// "github.com/Lazyn0tBug/beacon/server/global"
 	"github.com/Lazyn0tBug/beacon/server/model/common/response"
 	"github.com/Lazyn0tBug/beacon/server/model/system"
-	// "github.com/Lazyn0tBug/beacon/server/service"
+	"github.com/Lazyn0tBug/beacon/server/service"
 	system_service "github.com/Lazyn0tBug/beacon/server/service/system"
 	"github.com/Lazyn0tBug/beacon/server/utils"
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt"
+	"go.uber.org/zap"
 )
+
+var (
+	Logger     = utils.GetLogger()
+	jwtService = system_service.JwtService{}
+)
+
+type AuthController struct {
+	userService *service.UserService
+}
 
 func NewAuthController(userService *service.UserService) *AuthController {
 	return &AuthController{userService}
@@ -62,13 +72,13 @@ func (authController *AuthController) Logout(c *gin.Context) {
 	// Nothing to do here as JWT tokens are stateless
 	token := utils.GetToken(c)
 	jwt := system.JwtBlacklist{Jwt: token}
-	// err := system_service.JwtService.JsonInBlacklist(jwt)
+	err := jwtService.JsonInBlacklist(jwt)
 	c.JSON(http.StatusOK, gin.H{"message": "Logged out successfully"})
-	// if err != nil {
-	// 	global.GVA_LOG.Error("jwt作废失败!", zap.Error(err))
-	// 	response.FailWithMessage("jwt作废失败", c)
-	// 	return
-	// }
+	if err != nil {
+		Logger.Error("jwt作废失败!", zap.Error(err))
+		response.FailWithMessage("jwt作废失败", c)
+		return
+	}
 	utils.ClearToken(c)
 	response.OkWithMessage("jwt作废成功", c)
 }
