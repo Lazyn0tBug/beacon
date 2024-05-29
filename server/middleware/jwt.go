@@ -6,8 +6,9 @@ import (
 	"time"
 
 	"github.com/Lazyn0tBug/beacon/server/global"
-	"github.com/Lazyn0tBug/beacon/server/model/common/response"
 	"github.com/Lazyn0tBug/beacon/server/model"
+	"github.com/Lazyn0tBug/beacon/server/model/common/response"
+	model_system "github.com/Lazyn0tBug/beacon/server/model/system"
 	"github.com/Lazyn0tBug/beacon/server/service/system"
 	"github.com/Lazyn0tBug/beacon/server/utils"
 	"github.com/golang-jwt/jwt/v5"
@@ -17,7 +18,8 @@ import (
 )
 
 var jwtService = new(system.JwtService)
-type JwtBlacklist = model.system.JwtBlacklist
+
+type JwtBlacklist = model_system.JwtBlacklist
 
 func JWTAuth() gin.HandlerFunc {
 	return func(c *gin.Context) {

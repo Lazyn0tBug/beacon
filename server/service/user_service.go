@@ -52,7 +52,7 @@ func (userService *UserService) SuspendUser(userID uint64) error {
 }
 
 // GetUsersWithPagination 分页读取用户列表
-func (userService *UserService) GetUsersWithPagination(pageNumber, pageSize int) ([]model.User, error) {
+func (userService *UserService) GetUsersWithPagination(pageNumber, pageSize int) ([]model.UserPublic, error) {
 	return userService.userDAO.GetUsersWithPagination(pageNumber, pageSize)
 }
 

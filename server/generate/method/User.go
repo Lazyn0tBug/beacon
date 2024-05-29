@@ -6,12 +6,15 @@ import (
 )
 
 type UserMethod interface {
-	gen.Method
-
 	// GetUserList retrieves all users excluding the password field, also db.Omit("password").Find(&users)
 	//
 	// SELECT * FROM @@table OMIT (password)
 	GetUserList() ([]*model.UserPublic, error)
+
+	// get all users who role is above some role
+	//
+	// WHERE roleID > @roleID
+	GetUsersAboveRole(roleID int) ([]gen.T, error)
 
 	// SetActive sets the user as active and updates the updated_at timestamp.
 	//
