@@ -38,9 +38,21 @@ func main() {
 		}
 	}
 
+	global.GVA_ReadDB = initialize.ReadDB(context.Background())
+	global.GVA_WriteDB = initialize.WriteDB(context.Background())
+
 	// 从db中加载未过期的jwt token
-	if global.GVA_DB != nil {
+	if global.GVA_ReadDB != nil {
 		system.LoadAll()
+		db, _ := global.GVA_ReadDB.DB()
+		defer db.Close()
+	}
+
+	if global.GVA_WriteDB != nil {
+		initialize.RegisterTables()
+		db, _ := global.GVA_WriteDB.DB()
+		defer db.Close()
+
 	}
 
 	r := gin.Default()

@@ -3,44 +3,98 @@ package initialize
 import (
 	"context"
 	"os"
+	"sync"
 
 	"github.com/Lazyn0tBug/beacon/server/global"
+	"github.com/Lazyn0tBug/beacon/server/initialize/internal"
 	"github.com/Lazyn0tBug/beacon/server/model"
 	"github.com/Lazyn0tBug/beacon/server/model/system"
 	"github.com/Lazyn0tBug/beacon/server/utils"
+	"github.com/glebarez/sqlite"
 	"go.uber.org/zap"
-
+	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
+	"gorm.io/plugin/dbresolver"
 )
 
-func Gorm() *gorm.DB {
-	Logger := utils.GetLogger()
-	var db *gorm.DB
-	switch global.GVA_CONFIG.System.DbType {
-	case "mysql":
-		db = GormMysql()
-	case "postgres":
-		GormPostgresInit()
-		db = DB(context.Background())
-		// return GormPgSql()
-	case "oracle":
-		db = GormOracle()
-	case "mssql":
-		db = GormMssql()
-	case "sqlite":
-		db = GormSqlite()
-	default:
-		db = GormMysql()
-	}
+var (
+	db     *gorm.DB
+	once   sync.Once
+	Logger = utils.GetLogger()
+)
 
-	if db == nil {
-		Logger.Error("db initialized failed")
+func GormInit() {
+	once.Do(func() {
+		switch global.GVA_CONFIG.System.DbType {
+		case "mysql":
+			db = GormMysql()
+		case "postgres":
+			PostgresInit()
+		case "oracle":
+			db = GormOracle()
+		case "mssql":
+			db = GormMssql()
+		case "sqlite":
+			SqliteInit()
+		default:
+			db = GormMysql()
+		}
+
+		if db == nil {
+			Logger.Error("db initialized failed")
+		}
+	})
+}
+
+func WriteDB(ctx context.Context) *gorm.DB {
+	return db.Clauses(dbresolver.Write).WithContext(ctx)
+}
+
+func ReadDB(ctx context.Context) *gorm.DB {
+	return db.Clauses(dbresolver.Read).WithContext(ctx)
+}
+
+func DB(ctx context.Context) *gorm.DB {
+	return db.WithContext(ctx)
+}
+
+func PostgresInit() *gorm.DB {
+	p := global.GVA_CONFIG.Pgsql
+	if p.Dbname == "" {
+		db = nil
+	}
+	pgsqlConfig := postgres.Config{
+		DSN:                  p.Dsn(), // DSN data source name
+		PreferSimpleProtocol: false,
+	}
+	if DB, err := gorm.Open(postgres.New(pgsqlConfig), internal.Gorm.Config(p.Prefix, p.Singular)); err != nil {
+		db = nil
+		panic(err)
+	} else {
+		db = DB
 	}
 	return db
 }
 
+// GormSqlite 初始化Sqlite数据库
+func SqliteInit() *gorm.DB {
+	s := global.GVA_CONFIG.Sqlite
+	if s.Dbname == "" {
+		return nil
+	}
+
+	if db, err := gorm.Open(sqlite.Open(s.Dsn()), internal.Gorm.Config(s.Prefix, s.Singular)); err != nil {
+		panic(err)
+	} else {
+		sqlDB, _ := db.DB()
+		sqlDB.SetMaxIdleConns(s.MaxIdleConns)
+		sqlDB.SetMaxOpenConns(s.MaxOpenConns)
+		return db
+	}
+}
+
 func RegisterTables() {
-	db := global.GVA_DB
+	db := global.GVA_WriteDB
 	err := db.AutoMigrate(
 		model.User{},
 		model.Role{},

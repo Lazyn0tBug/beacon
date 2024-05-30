@@ -1,8 +1,6 @@
 package initialize
 
 import (
-	"sync"
-
 	"context"
 
 	"github.com/Lazyn0tBug/beacon/server/config"
@@ -14,11 +12,6 @@ import (
 )
 
 const PGSQLDSN = "host=localhost user=zombo password=token dbname=gorm port=5432 sslmode=disable TimeZone=Asia/Shanghai"
-
-var (
-	db   *gorm.DB
-	once sync.Once
-)
 
 // GormPgSql 初始化 Postgresql 数据库
 // Author [piexlmax](https://github.com/piexlmax)
@@ -74,16 +67,16 @@ func GormPostgresInit() {
 }
 
 // WriteDB ...
-func WriteDB(ctx context.Context) *gorm.DB {
+func PgWriteDB(ctx context.Context) *gorm.DB {
 	return db.Clauses(dbresolver.Write).WithContext(ctx)
 }
 
 // ReadDB ...
-func ReadDB(ctx context.Context) *gorm.DB {
+func PgReadDB(ctx context.Context) *gorm.DB {
 	return db.Clauses(dbresolver.Read).WithContext(ctx)
 }
 
 // DB Read write separation
-func DB(ctx context.Context) *gorm.DB {
+func PgDB(ctx context.Context) *gorm.DB {
 	return db.WithContext(ctx)
 }

@@ -132,10 +132,10 @@ mssql:
   log-mode: ""
   log-zap: false
 sqlite:
-  path: ""
+  path: "."
   port: ""
   config: ""
-  db-name: ""
+  db-name: "test"
   username: ""
   password: ""
   max-idle-conns: 10

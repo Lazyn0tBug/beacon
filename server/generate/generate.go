@@ -1,6 +1,8 @@
 package main
 
 import (
+	"context"
+
 	"github.com/Lazyn0tBug/beacon/server/generate/method"
 	"github.com/Lazyn0tBug/beacon/server/initialize"
 	"github.com/Lazyn0tBug/beacon/server/model"
@@ -11,7 +13,7 @@ import (
 
 func main() {
 	Logger := utils.GetLogger()
-	db := initialize.Gorm()
+	db := initialize.DB(context.Background())
 	if db == nil {
 		Logger.Error("failed to connect database")
 	}
