@@ -67,16 +67,16 @@ func GormPostgresInit() {
 }
 
 // WriteDB ...
-func PgWriteDB(ctx context.Context) *gorm.DB {
+func WriteDB(ctx context.Context) *gorm.DB {
 	return db.Clauses(dbresolver.Write).WithContext(ctx)
 }
 
 // ReadDB ...
-func PgReadDB(ctx context.Context) *gorm.DB {
+func ReadDB(ctx context.Context) *gorm.DB {
 	return db.Clauses(dbresolver.Read).WithContext(ctx)
 }
 
 // DB Read write separation
-func PgDB(ctx context.Context) *gorm.DB {
+func DB(ctx context.Context) *gorm.DB {
 	return db.WithContext(ctx)
 }
