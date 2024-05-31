@@ -12,6 +12,7 @@ import (
 	"github.com/Lazyn0tBug/beacon/server/utils"
 	"github.com/glebarez/sqlite"
 	"go.uber.org/zap"
+	"gorm.io/driver/mysql"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 	"gorm.io/plugin/dbresolver"
@@ -27,17 +28,13 @@ func GormInit() {
 	once.Do(func() {
 		switch global.GVA_CONFIG.System.DbType {
 		case "mysql":
-			db = GormMysql()
+			db = MysqlInit()
 		case "postgres":
-			PostgresInit()
-		case "oracle":
-			db = GormOracle()
-		case "mssql":
-			db = GormMssql()
+			db = PostgresInit()
 		case "sqlite":
-			SqliteInit()
+			db = SqliteInit()
 		default:
-			db = GormMysql()
+			db = MysqlInit()
 		}
 
 		if db == nil {
@@ -56,6 +53,28 @@ func ReadDB(ctx context.Context) *gorm.DB {
 
 func DB(ctx context.Context) *gorm.DB {
 	return db.WithContext(ctx)
+}
+
+func MysqlInit() *gorm.DB {
+	m := global.GVA_CONFIG.Mysql
+	if m.Dbname == "" {
+		db = nil
+	}
+	mysqlConfig := mysql.Config{
+		DSN:                       m.Dsn(), // DSN data source name
+		DefaultStringSize:         191,     // string 类型字段的默认长度
+		SkipInitializeWithVersion: false,   // 根据版本自动配置
+	}
+
+	if db, err := gorm.Open(mysql.New(mysqlConfig), internal.Gorm.Config(m.Prefix, m.Singular)); err != nil {
+		return nil
+	} else {
+		db.InstanceSet("gorm:table_options", "ENGINE="+m.Engine)
+		sqlDB, _ := db.DB()
+		sqlDB.SetMaxIdleConns(m.MaxIdleConns)
+		sqlDB.SetMaxOpenConns(m.MaxOpenConns)
+		return db
+	}
 }
 
 func PostgresInit() *gorm.DB {
