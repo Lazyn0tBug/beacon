@@ -15,6 +15,7 @@ import (
 )
 
 var (
+	GVA_DB      *gorm.DB
 	GVA_ReadDB  *gorm.DB
 	GVA_WriteDB *gorm.DB
 	GVA_DBList  map[string]*gorm.DB

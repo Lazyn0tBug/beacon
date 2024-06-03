@@ -6,6 +6,7 @@ import (
 	"github.com/Lazyn0tBug/beacon/server/generate/method"
 	"github.com/Lazyn0tBug/beacon/server/initialize"
 	"github.com/Lazyn0tBug/beacon/server/model"
+	"github.com/Lazyn0tBug/beacon/server/model/system"
 	"github.com/Lazyn0tBug/beacon/server/utils"
 
 	"gorm.io/gen"
@@ -26,10 +27,9 @@ func main() {
 	// gormdb, _ := gorm.Open(mysql.Open("root:@(127.0.0.1:3306)/demo?charset=utf8mb4&parseTime=True&loc=Local"))
 	g.UseDB(db) // reuse your gorm db
 
-	g.ApplyBasic(model.User{}) // g.ApplyBasic(g.GenerateModel("User"),
-	// g.ApplyBasic(g.GenerateModelAs("companies", "Company"))
-	// g.ApplyBasic(model.Customer{}, model.CreditCard{}, model.Bank{}) // Associations
-	// g.ApplyBasic(g.GenerateModelAs("user", "JustUser"))
+	g.ApplyBasic(model.User{}, model.Case{}, model.Customer{}, model.Role{}, model.Permission{}, model.Hospital{}, model.Doctor{}, model.MedicalRecord{}, model.Appointment{}, model.MemberLevel{}, model.ServiceItem{}) // g.ApplyBasic(g.GenerateModel("User"),
+
+	g.ApplyBasic(system.JwtBlacklist{}, system.JwtInActive{})
 
 	// apply diy interfaces on structs or table models
 	g.ApplyInterface(func(method.UserMethod) {}, model.User{}) // struct test will be ignored

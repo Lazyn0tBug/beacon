@@ -4,7 +4,6 @@ package main
 
 import (
 	"context"
-	"fmt"
 	"log"
 	"net/http"
 	"os"
@@ -38,21 +37,14 @@ func main() {
 		}
 	}
 
-	global.GVA_ReadDB = initialize.ReadDB(context.Background())
-	global.GVA_WriteDB = initialize.WriteDB(context.Background())
+	global.GVA_DB = initialize.DB(context.Background())
 
 	// 从db中加载未过期的jwt token
-	if global.GVA_ReadDB != nil {
-		system.LoadAll()
-		db, _ := global.GVA_ReadDB.DB()
-		defer db.Close()
-	}
-
-	if global.GVA_WriteDB != nil {
+	if global.GVA_DB != nil {
 		initialize.RegisterTables()
-		db, _ := global.GVA_WriteDB.DB()
+		system.LoadAll()
+		db, _ := global.GVA_DB.DB()
 		defer db.Close()
-
 	}
 
 	r := gin.Default()
@@ -64,11 +56,6 @@ func main() {
 	// Now you can use the logger
 	Logger.Info("This is an info message")
 	Logger.Error("This is an error message")
-
-	for i := 0; i < 12; i++ {
-		go Logger.Info(fmt.Sprintf("test log: %d", i))
-	}
-	// time.Sleep(time.Second * 3)
 
 	go func() {
 		// 服务连接
