@@ -25,11 +25,12 @@ var (
 )
 
 func GormInit() {
+	Logger.Info("db type is", zap.String("db-type", global.GVA_CONFIG.System.DbType))
 	once.Do(func() {
 		switch global.GVA_CONFIG.System.DbType {
 		case "mysql":
 			db = MysqlInit()
-		case "postgres":
+		case "pgsql":
 			db = PostgresInit()
 		case "sqlite":
 			db = SqliteInit()
@@ -57,6 +58,7 @@ func DB(ctx context.Context) *gorm.DB {
 
 func MysqlInit() *gorm.DB {
 	m := global.GVA_CONFIG.Mysql
+	Logger.Info("db name is ", zap.String("dbname", m.Dbname))
 	if m.Dbname == "" {
 		db = nil
 	}
@@ -81,6 +83,7 @@ func PostgresInit() *gorm.DB {
 	p := global.GVA_CONFIG.Pgsql
 	if p.Dbname == "" {
 		db = nil
+		Logger.Error("db name is null")
 	}
 	pgsqlConfig := postgres.Config{
 		DSN:                  p.Dsn(), // DSN data source name

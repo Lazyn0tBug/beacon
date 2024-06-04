@@ -37,6 +37,7 @@ func main() {
 		}
 	}
 
+	initialize.GormInit()
 	global.GVA_DB = initialize.DB(context.Background())
 
 	// 从db中加载未过期的jwt token
