@@ -2,11 +2,13 @@
 package utils
 
 import (
+	"fmt"
 	"os"
 	"path/filepath"
 	"sync"
 
 	"github.com/BurntSushi/toml"
+	"github.com/Lazyn0tBug/beacon/server/utils"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 	lumberjack "gopkg.in/natefinch/lumberjack.v2"
@@ -25,6 +27,7 @@ type LoggingConfig struct {
 	Level            string   `toml:"level"`
 	OutputPaths      []string `toml:"outputPaths"`
 	ErrorOutputPaths []string `toml:"errorOutputPaths"`
+	Filename         string   `toml:"filename"`
 	Encoding         string   `toml:"encoding"`
 }
 
@@ -93,15 +96,6 @@ func newLoggerFromConfig(loggingConfig *LoggingConfig, lumberjackConfig *Lumberj
 		return nil, err
 	}
 
-	// Create the lumberjack syncer
-	lumberJackSyncer := zapcore.AddSync(&lumberjack.Logger{
-		Filename:   lumberjackConfig.Filename,
-		MaxSize:    lumberjackConfig.MaxSize,
-		MaxBackups: lumberjackConfig.MaxBackups,
-		MaxAge:     lumberjackConfig.MaxAge,
-		Compress:   lumberjackConfig.Compress,
-	})
-
 	// Create the encoder config
 	encoderConfig := zapcore.EncoderConfig{
 		TimeKey:        "time",
@@ -119,18 +113,31 @@ func newLoggerFromConfig(loggingConfig *LoggingConfig, lumberjackConfig *Lumberj
 	// Prepare the syncers slice
 	var syncers []zapcore.WriteSyncer
 	for _, outputPath := range loggingConfig.OutputPaths {
-		if err := os.MkdirAll(filepath.Dir(outputPath), 0755); err != nil {
-			panic("failed to create log directory: " + err.Error())
+		if outputPath == "stdout" {
+			syncers = append(syncers, zapcore.AddSync(os.Stdout))
+			continue
+		} else if outputPath == "stderr" {
+			syncers = append(syncers, zapcore.AddSync(os.Stderr))
+			continue
+		}
+		if ok, _ := utils.PathExists(filepath.Dir(outputPath)); !ok {
+			fmt.Printf("create %v directory\n", outputPath)
+			if err := os.MkdirAll(filepath.Dir(outputPath), os.ModePerm); err != nil {
+				panic("failed to create log directory: " + err.Error())
+			}
 		}
 
-		file, err := os.OpenFile(outputPath, os.O_WRONLY|os.O_CREATE|os.O_APPEND, 0644)
-		if err != nil {
-			return nil, err
-		}
+		// Create the lumberjack syncer
+		lumberJackSyncer := zapcore.AddSync(&lumberjack.Logger{
+			Filename:   filepath.Join(filepath.Dir(outputPath), loggingConfig.Filename),
+			MaxSize:    lumberjackConfig.MaxSize,
+			MaxBackups: lumberjackConfig.MaxBackups,
+			MaxAge:     lumberjackConfig.MaxAge,
+			Compress:   lumberjackConfig.Compress,
+		})
 		// defer file.Close()
-		syncers = append(syncers, zapcore.AddSync(file))
+		syncers = append(syncers, zapcore.AddSync(lumberJackSyncer))
 	}
-	syncers = append(syncers, lumberJackSyncer)
 
 	// Create the core with the desired options
 	core := zapcore.NewCore(

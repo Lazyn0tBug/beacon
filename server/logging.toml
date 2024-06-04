@@ -1,7 +1,8 @@
 [logging]
   level = "info"
-  outputPaths = ["stdout", "./logs/app.log"]
+  outputPaths = ["stdout", "log"]
   errorOutputPaths = ["stderr"]
+  filename = "app.log"
   encoding = "json"
 
 [lumberjack]
