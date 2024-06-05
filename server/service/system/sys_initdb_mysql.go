@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"path/filepath"
 
 	"github.com/Lazyn0tBug/beacon/server/config"
 	"github.com/Lazyn0tBug/beacon/server/global"
@@ -65,7 +64,6 @@ func (h MysqlInitHandler) EnsureDB(ctx context.Context, conf *request.InitDB) (n
 	}), &gorm.Config{DisableForeignKeyConstraintWhenMigrating: true}); err != nil {
 		return ctx, err
 	}
-	global.GVA_CONFIG.AutoCode.Root, _ = filepath.Abs("..")
 	next = context.WithValue(next, "db", db)
 	return next, err
 }

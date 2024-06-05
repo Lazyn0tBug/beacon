@@ -3,7 +3,6 @@ package system
 import (
 	"context"
 	"errors"
-	"path/filepath"
 
 	"github.com/Lazyn0tBug/beacon/server/config"
 	"github.com/Lazyn0tBug/beacon/server/global"
@@ -62,7 +61,6 @@ func (h MssqlInitHandler) EnsureDB(ctx context.Context, conf *request.InitDB) (n
 		return nil, err
 	}
 
-	global.GVA_CONFIG.AutoCode.Root, _ = filepath.Abs("..")
 	next = context.WithValue(next, "db", db)
 	return next, err
 }

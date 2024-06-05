@@ -8,7 +8,6 @@ import (
 	"sync"
 
 	"github.com/BurntSushi/toml"
-	"github.com/Lazyn0tBug/beacon/server/utils"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 	lumberjack "gopkg.in/natefinch/lumberjack.v2"
@@ -120,7 +119,7 @@ func newLoggerFromConfig(loggingConfig *LoggingConfig, lumberjackConfig *Lumberj
 			syncers = append(syncers, zapcore.AddSync(os.Stderr))
 			continue
 		}
-		if ok, _ := utils.PathExists(filepath.Dir(outputPath)); !ok {
+		if ok, _ := PathExists(filepath.Dir(outputPath)); !ok {
 			fmt.Printf("create %v directory\n", outputPath)
 			if err := os.MkdirAll(filepath.Dir(outputPath), os.ModePerm); err != nil {
 				panic("failed to create log directory: " + err.Error())
