@@ -3,7 +3,9 @@ package main
 import (
 	"context"
 
+	"github.com/Lazyn0tBug/beacon/server/core"
 	"github.com/Lazyn0tBug/beacon/server/generate/method"
+	"github.com/Lazyn0tBug/beacon/server/global"
 	"github.com/Lazyn0tBug/beacon/server/initialize"
 	"github.com/Lazyn0tBug/beacon/server/model"
 	"github.com/Lazyn0tBug/beacon/server/model/system"
@@ -13,7 +15,9 @@ import (
 )
 
 func main() {
+	global.GVA_VP = core.Viper()
 	Logger := utils.GetLogger()
+	initialize.GormInit()
 	db := initialize.DB(context.Background())
 	if db == nil {
 		Logger.Error("failed to connect database")
@@ -27,7 +31,7 @@ func main() {
 	// gormdb, _ := gorm.Open(mysql.Open("root:@(127.0.0.1:3306)/demo?charset=utf8mb4&parseTime=True&loc=Local"))
 	g.UseDB(db) // reuse your gorm db
 
-	g.ApplyBasic(model.User{}, model.Case{}, model.Customer{}, model.Role{}, model.Permission{}, model.Hospital{}, model.Doctor{}, model.MedicalRecord{}, model.Appointment{}, model.MemberLevel{}, model.ServiceItem{}) // g.ApplyBasic(g.GenerateModel("User"),
+	g.ApplyBasic(model.User{}, model.CaseInfo{}, model.Customer{}, model.Role{}, model.Permission{}, model.Hospital{}, model.Doctor{}, model.MedicalRecord{}, model.Appointment{}, model.MemberLevel{}, model.ServiceItem{}) // g.ApplyBasic(g.GenerateModel("User"),
 
 	g.ApplyBasic(system.JwtBlacklist{}, system.JwtInActive{})
 

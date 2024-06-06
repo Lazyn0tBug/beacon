@@ -6,8 +6,8 @@ import "github.com/Lazyn0tBug/beacon/server/global"
 type Role struct {
 	global.GBN_MODEL
 	// global.GVA_MODEL
-	RoleName    string `gorm:"not null;unique;comment:角色名"` // 用户登录名
-	Permissions []uint `gorm:"one2many:role_permissions;"`
+	RoleName    string       `gorm:"not null;unique;comment:角色名"` // 用户登录名
+	Permissions []Permission `gorm:"many2many:role_permissions;"`
 }
 
 func (Role) TableName() string {

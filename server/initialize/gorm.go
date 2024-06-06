@@ -116,13 +116,17 @@ func SqliteInit() *gorm.DB {
 }
 
 func RegisterTables() {
-	db := global.GVA_WriteDB
+	db := global.GVA_DB
+	if db == nil {
+		global.GVA_LOG.Error("gorm DB is not initialized")
+		os.Exit(0)
+	}
 	err := db.AutoMigrate(
 		model.User{},
 		model.Role{},
 		model.Permission{},
 		model.Customer{},
-		model.Case{},
+		model.CaseInfo{},
 		model.Appointment{},
 		model.ServiceItem{},
 		model.Doctor{},

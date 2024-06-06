@@ -18,26 +18,27 @@ import (
 // Author [SliverHorn](https://github.com/SliverHorn)
 func Viper(path ...string) *viper.Viper {
 	var config string
+	gin.SetMode(gin.ReleaseMode)
 
 	if len(path) == 0 {
 		flag.StringVar(&config, "c", "", "choose config file.")
 		flag.Parse()
 		if config == "" { // 判断命令行参数是否为空
-			if configEnv := os.Getenv(internal.ConfigEnv); configEnv == "" { // 判断 internal.ConfigEnv 常量存储的环境变量是否为空
+			if configEnv := os.Getenv(ConfigEnv); configEnv == "" { // 判断 ConfigEnv 常量存储的环境变量是否为空
 				switch gin.Mode() {
 				case gin.DebugMode:
-					config = internal.ConfigDefaultFile
-					fmt.Printf("您正在使用gin模式的%s环境名称,config的路径为%s\n", gin.Mode(), internal.ConfigDefaultFile)
+					config = ConfigDefaultFile
+					fmt.Printf("您正在使用gin模式的%s环境名称,config的路径为%s\n", gin.Mode(), ConfigDefaultFile)
 				case gin.ReleaseMode:
-					config = internal.ConfigReleaseFile
-					fmt.Printf("您正在使用gin模式的%s环境名称,config的路径为%s\n", gin.Mode(), internal.ConfigReleaseFile)
+					config = ConfigReleaseFile
+					fmt.Printf("您正在使用gin模式的%s环境名称,config的路径为%s\n", gin.Mode(), ConfigReleaseFile)
 				case gin.TestMode:
-					config = internal.ConfigTestFile
-					fmt.Printf("您正在使用gin模式的%s环境名称,config的路径为%s\n", gin.Mode(), internal.ConfigTestFile)
+					config = ConfigTestFile
+					fmt.Printf("您正在使用gin模式的%s环境名称,config的路径为%s\n", gin.Mode(), ConfigTestFile)
 				}
-			} else { // internal.ConfigEnv 常量存储的环境变量不为空 将值赋值于config
+			} else { // ConfigEnv 常量存储的环境变量不为空 将值赋值于config
 				config = configEnv
-				fmt.Printf("您正在使用%s环境变量,config的路径为%s\n", internal.ConfigEnv, config)
+				fmt.Printf("您正在使用%s环境变量,config的路径为%s\n", ConfigEnv, config)
 			}
 		} else { // 命令行参数不为空 将值赋值于config
 			fmt.Printf("您正在使用命令行的-c参数传递的值,config的路径为%s\n", config)
