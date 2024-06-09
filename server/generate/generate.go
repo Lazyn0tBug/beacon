@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"runtime"
 
 	"github.com/Lazyn0tBug/beacon/server/core"
 	"github.com/Lazyn0tBug/beacon/server/generate/method"
@@ -16,19 +17,21 @@ import (
 
 func main() {
 	global.GVA_VP = core.Viper()
-	Logger := utils.GetLogger()
+	global.GVA_LOG = utils.GetLogger() // 初始化zap日志库
+	global.GVA_LOG.Info(runtime.GOOS)
 	initialize.GormInit()
 	db := initialize.DB(context.Background())
 	if db == nil {
-		Logger.Error("failed to connect database")
+		global.GVA_LOG.Error("failed to connect database")
 	}
+
+	initialize.RegisterTables()
 
 	g := gen.NewGenerator(gen.Config{
 		OutPath: "./query",
 		Mode:    gen.WithoutContext | gen.WithDefaultQuery | gen.WithQueryInterface, // generate mode
 	})
 
-	// gormdb, _ := gorm.Open(mysql.Open("root:@(127.0.0.1:3306)/demo?charset=utf8mb4&parseTime=True&loc=Local"))
 	g.UseDB(db) // reuse your gorm db
 
 	g.ApplyBasic(model.User{}, model.CaseInfo{}, model.Customer{}, model.Role{}, model.Permission{}, model.Hospital{}, model.Doctor{}, model.MedicalRecord{}, model.Appointment{}, model.MemberLevel{}, model.ServiceItem{}) // g.ApplyBasic(g.GenerateModel("User"),

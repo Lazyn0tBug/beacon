@@ -41,6 +41,7 @@ func GormInit() {
 		if db == nil {
 			Logger.Error("db initialized failed")
 		}
+		global.GVA_DB = db
 	})
 }
 
@@ -116,7 +117,6 @@ func SqliteInit() *gorm.DB {
 }
 
 func RegisterTables() {
-	db := global.GVA_DB
 	if db == nil {
 		global.GVA_LOG.Error("gorm DB is not initialized")
 		os.Exit(0)

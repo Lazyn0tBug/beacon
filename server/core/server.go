@@ -3,36 +3,17 @@ package core
 import (
 	"fmt"
 
-	"time"
-
 	"github.com/Lazyn0tBug/beacon/server/global"
 	"github.com/Lazyn0tBug/beacon/server/initialize"
 	"github.com/Lazyn0tBug/beacon/server/service/system"
-	"github.com/Lazyn0tBug/beacon/server/utils"
 	"go.uber.org/zap"
-
-	"github.com/fvbock/endless"
-	"github.com/gin-gonic/gin"
-)
-
-var (
-	Logger = utils.GetLogger()
 )
 
 type server interface {
 	ListenAndServe() error
 }
 
-func initServer(address string, router *gin.Engine) server {
-	s := endless.NewServer(address, router)
-	s.ReadHeaderTimeout = 20 * time.Second
-	s.WriteTimeout = 20 * time.Second
-	s.MaxHeaderBytes = 1 << 20
-	return s
-}
-
 func RunServer() {
-
 	if global.GVA_CONFIG.System.UseMultipoint || global.GVA_CONFIG.System.UseRedis {
 		// 初始化redis链接
 		initialize.InitializeRedis()
@@ -42,7 +23,7 @@ func RunServer() {
 		// 初始化mongo链接
 		err := initialize.Mongo.InitializeMongo()
 		if err != nil {
-			Logger.Error("MongoDB connection failed", zap.String("err", err.Error()))
+			global.GVA_LOG.Error("MongoDB connection failed", zap.String("err", err.Error()))
 			panic(err)
 		}
 	}
@@ -58,7 +39,7 @@ func RunServer() {
 	address := fmt.Sprintf(":%d", global.GVA_CONFIG.System.Addr)
 	s := initServer(address, Router)
 
-	Logger.Info("server run success on ", zap.String("address", address))
+	global.GVA_LOG.Info("server run success on ", zap.String("address", address))
 
-	Logger.Error(s.ListenAndServe().Error())
+	global.GVA_LOG.Error(s.ListenAndServe().Error())
 }
